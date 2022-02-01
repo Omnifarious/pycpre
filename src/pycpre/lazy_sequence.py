@@ -83,13 +83,17 @@ class LazySequence(Sequence[T]):
 
     def __getitem__(self, index: Union[int, slice]) \
             -> Union[T, "LazySequence[T]", List[T]]:
-        if index < 0:
-            raise ValueError("Lazy sequences may not have an end and don't "
-                             "support indexing from the end.")
         if isinstance(index, int):
-            return self.state.ensure_index(self.index + index)
+            if index < 0:
+                raise ValueError("Lazy sequences may not have an end and don't "
+                                 "support indexing from the end.")
+            try:
+                return self.state.ensure_index(self.index + index)
+            except StopIteration:
+                raise IndexError(f"LazySequence index {index} out of range")
         else:
-            if index.start < 0 or index.stop < 0:
+            if (index.start is not None and index.start < 0) or \
+                    (index.stop is not None and index.stop < 0):
                 raise ValueError("Lazy sequences may not have an end and don't "
                                  "support indexing from the end.")
             if index.step is not None and index.stop is None:
@@ -105,7 +109,10 @@ class LazySequence(Sequence[T]):
                 start += self.index
                 stop += self.index
                 assert self.state.index_of_0 <= start
-                self.state.ensure_index(self.index + stop)
+                try:
+                    self.state.ensure_index(self.index + stop)
+                except StopIteration:
+                    pass
                 start -= self.state.index_of_0
                 stop -= self.state.index_of_0
                 if index.step is None:
