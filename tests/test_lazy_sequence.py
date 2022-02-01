@@ -34,6 +34,15 @@ def test_simple_generator():
     del tmp
     gc.collect()
 
+    with pytest.raises(ValueError):
+        assert ls[-1] == 25
+
+    with pytest.raises(ValueError):
+        assert ls[-1:] == [25]
+
+    with pytest.raises(ValueError):
+        assert ls[:-1] == [9, 16, 25]
+
     assert ls.index == 2
     assert len(ls.state.heads) == 1
     assert len(ls.state.buffer) == 0
