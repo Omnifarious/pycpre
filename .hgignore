@@ -1,0 +1,10 @@
+syntax: glob
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+
+syntax: re
+^\.idea$
+^venv$
+^\.pytest_cache$
