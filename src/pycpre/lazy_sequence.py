@@ -9,9 +9,10 @@
 #  this program. If not, see <https://www.gnu.org/licenses/gpl-3.0.html>
 
 from collections.abc import Sequence
-from heapq import heappush
 from typing import Generic, Iterable, Iterator, List, Optional, TypeVar, Union
 from weakref import ref, ReferenceType
+
+__all__ = ["LazySequence"]
 
 
 T = TypeVar("T")
@@ -22,7 +23,7 @@ class _LazySequenceState(Generic[T]):
         super().__init__(**kwargs)
         self.buffer: List[T] = []
         self.iterator: Iterator[T] = item_iterator
-        self.heads: List[ReferenceType[T]]= []
+        self.heads: List[ReferenceType[T]] = []
         self.index_of_0: int = 0
 
     def new_sequence(self, sequence: "LazySequence[T]") -> None:
