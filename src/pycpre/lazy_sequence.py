@@ -17,30 +17,6 @@ from weakref import ref, ReferenceType
 T = TypeVar("T")
 
 
-# class _SequenceRef(ReferenceType["LazySequence"[T]]):
-#     def __init__(
-#             self,
-#             sequence: "LazySequence"[T],
-#             state: "_LazySequenceState"[T],
-#             **kwargs
-#     ):
-#         super().__init__(self, sequence, state._refdestroyed)
-#
-#     def __cmp__(self, other_ref: "_SequenceRef"[T]) -> int:
-#         me = self()
-#         other = other_ref()
-#         if (me, other) is (None, None):
-#             return id(self) - id(other_ref)
-#         elif me is None:
-#             return -1
-#         elif other is None:
-#             return 1
-#         else:  # me and other are both not None
-#             cmpval: int = me.index - other.index
-#             if cmpval == 0:
-#                 cmpval = id(self) - id(other_ref)
-#             return cmpval
-
 class _LazySequenceState(Generic[T]):
     def __init__(self, item_iterator: Iterator[T], **kwargs):
         super().__init__(**kwargs)
@@ -49,7 +25,7 @@ class _LazySequenceState(Generic[T]):
         self.heads: List[ReferenceType[T]]= []
         self.index_of_0: int = 0
 
-    def new_sequence(self, sequence: "LazySequence"[T]) -> None:
+    def new_sequence(self, sequence: "LazySequence[T]") -> None:
         assert sequence.state is self
         if sequence.index < self.index_of_0:
             raise RuntimeError("LazySequence created that's attempting to time "
@@ -89,7 +65,7 @@ class _LazySequenceState(Generic[T]):
 
 
 class LazySequence(Sequence[T]):
-    def __init__(self, item_iterator: Union["LazySequence", Iterable[T]], **kwargs):
+    def __init__(self, item_iterator: Union["LazySequence[T]", Iterable[T]], **kwargs):
         if isinstance(item_iterator, LazySequence):
             self.state = item_iterator.state
             self.index = item_iterator.index
@@ -105,7 +81,7 @@ class LazySequence(Sequence[T]):
         raise NotImplemented("Lazy sequences may be infinitely long.")
 
     def __getitem__(self, index: Union[int, slice]) \
-            -> Union[T, "LazySequence"[T], List[T]]:
+            -> Union[T, "LazySequence[T]", List[T]]:
         if index < 0:
             raise ValueError("Lazy sequences may not have an end and don't "
                              "support indexing from the end.")
